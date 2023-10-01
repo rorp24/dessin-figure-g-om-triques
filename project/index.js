@@ -25,20 +25,25 @@ const startDrawing = (event) => {
  */
 const stopDrawing = (event) => {
     let coordArrayMU = [event.offsetX, event.offsetY]
-    //initialisation des data pour le rectangle
-    let dataRect = [/*Coordonées X et Y*/...coordArrayMD, /*Largeur*/ Math.abs(coordArrayMD[0] - coordArrayMU[0]), /*Hauteur*/Math.abs(coordArrayMD[1] - coordArrayMU[1])]
+    //Si le rectangle créé ne serai pas trop petit pour interagir avec (exemple à cause d'un double click glissé)
+    if (Math.abs(coordArrayMD[0] - coordArrayMU[0]) > 5
+        && Math.abs(coordArrayMD[1] - coordArrayMU[1]) > 5
+    ) {
+        //initialisation des data pour le rectangle
+        let dataRect = [/*Coordonées X et Y*/...coordArrayMD, /*Largeur*/ Math.abs(coordArrayMD[0] - coordArrayMU[0]), /*Hauteur*/Math.abs(coordArrayMD[1] - coordArrayMU[1])]
 
-    //gestion du cas où l'utilisateur ne trace pas son rectangle de haut en bas et de droite à gauche
-    if (coordArrayMD[0] > coordArrayMU[0]) {
-        dataRect[0] = coordArrayMU[0]
-    }
-    if (coordArrayMD[1] > coordArrayMU[1]) {
-        dataRect[1] = coordArrayMU[1]
-    }
+        //gestion du cas où l'utilisateur ne trace pas son rectangle de haut en bas et de droite à gauche
+        if (coordArrayMD[0] > coordArrayMU[0]) {
+            dataRect[0] = coordArrayMU[0]
+        }
+        if (coordArrayMD[1] > coordArrayMU[1]) {
+            dataRect[1] = coordArrayMU[1]
+        }
 
-    //traçage du rectangle
-    let rectangle = new Rectangle(...dataRect)
-    rectangleArray.push(rectangle)
+        //traçage du rectangle
+        let rectangle = new Rectangle(...dataRect)
+        rectangleArray.push(rectangle)
+    }
     canvas.removeEventListener('mouseup', stopDrawing)
 }
 
@@ -48,13 +53,18 @@ const stopDrawing = (event) => {
  */
 const rectangleToRotate = (event) => {
     let clickCoordinates = [event.offsetX, event.offsetY]
-    let rectangleToRotate = rectangleArray.find((rectangle) => {
+    //On cherche le rectangle sur lequel on à cliqué. On fait un findLast pour gérer proprement le cas
+    //où l'utilisateur empile les rectangles
+    let rectangleToRotate = rectangleArray.findLast((rectangle) => {
         return clickCoordinates[0] >= rectangle.x
             && clickCoordinates[0] <= rectangle.x + rectangle.width
             && clickCoordinates[1] >= rectangle.y
             && clickCoordinates[1] <= rectangle.y + rectangle.height
     })
-    rectangleToRotate.state = stateList[1]
+    //on verifie qu'on à trouvé un rectangle, histoire d'éviter les erreur dans la console en cas de double click dans le vide
+    if (rectangleToRotate) {
+        rectangleToRotate.state = stateList[1]
+    }
 }
 
 /**
