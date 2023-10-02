@@ -92,6 +92,47 @@ const animateRectangles = () => {
 }
 
 /**
+ * Compare les aires des rectangles, puis colore de la même couleur (générer aléatoirement) les deux rectangles qui ont la plus petite différence d'aire.
+ */
+const compareArea = () => {
+    //gestion du cas où l'utilisateur appuie sur le bouton alors qu'il n'y a pas 2 rectangle
+    if (rectangleArray.length > 1) {
+        //nos deux rectangles sélectionné
+        let rectangle1
+        let rectangle2
+        //on trie les rectangles par aire, afin que la différence d'aire entre le premier 
+        //et le deuxième soit toujours plus petite que celle entre le premier et le troisième
+        const compareArray = [...rectangleArray].sort((rect1, rect2) => rect1.height * rect1.width - rect2.height * rect2.width)
+        //on boucle sur chaque rectangle
+        compareArray.forEach((rectangle, index) => {
+            //ne fait le code que si l'on est pas au dernier index
+            if (compareArray[index + 1]) {
+                //Initialise rectangle 1 et 2, afin de pouvoir comparer
+                if (rectangle1 && rectangle2) {
+                    //si la différence d'aire de nos rectangles séléctionnés est supérieure à celle des rectangles qu'on compare
+                    //alors les rectangles qu'on compare deviennent les rectangle séléctionnés
+                    if (rectangle2.height * rectangle2.width - rectangle1.height * rectangle1.width > compareArray[index + 1].height * compareArray[index + 1].width - rectangle.height * rectangle.width) {
+                        rectangle1 = rectangle
+                        rectangle2 = compareArray[index + 1]
+                    }
+                }
+                else {
+                    rectangle1 = rectangle
+                    rectangle2 = compareArray[index + 1]
+                }
+            }
+        })
+        //on génère la nouvelle couleur, et on change de couleur les deux rectangles
+        const newColor = getRandomColor()
+        rectangleArray.find(rectangle => rectangle.x == rectangle1.x && rectangle.y == rectangle1.y).color = newColor
+        rectangleArray.find(rectangle => rectangle.x == rectangle2.x && rectangle.y == rectangle2.y).color = newColor
+    }
+    else {
+        alert('Pas assez de rectangles')
+    }
+}
+
+/**
  * Génère une couleur aléatoire sous la forme '#XXXXXX'
  * 
  * La fonction est écrite de manière plus classique uniquement pour montrer que je sais initialiser une fonction de multiple manière.
@@ -122,13 +163,13 @@ class Rectangle {
     }
 
     /**
-     * Dessine le rectangle
+     * Methode privée, dessine le rectangle
      * 
      * Si tempX et tempY ne sont pas défini, utilise le x et y par défaut du rectangle
      * @param {Number} tempX 
      * @param {Number} tempY 
      */
-    drawRectangle(tempX = undefined, tempY = undefined) {
+    _drawRectangle(tempX = undefined, tempY = undefined) {
         context.fillStyle = this.color
         context.fillRect(tempX || this.x, tempY || this.y, this.width, this.height)
     }
@@ -142,7 +183,7 @@ class Rectangle {
             this.angle = this.angle + (2 * Math.PI) / 360
             context.setTransform(1, 0, 0, 1, this.x + this.width / 2, this.y + this.height / 2)
             context.rotate(this.angle)
-            this.drawRectangle(this.width / -2, this.height / -2)
+            this._drawRectangle(this.width / -2, this.height / -2)
             //si le rectangle à fait un tour complet, on le supprime
             if (this.angle >= 2 * Math.PI) {
                 this.state = stateList[2]
@@ -151,7 +192,7 @@ class Rectangle {
         //sinon le dessine dans son propre contexte sans l'animer
         else {
             context.setTransform(1, 0, 0, 1, 0, 0);
-            this.drawRectangle()
+            this._drawRectangle()
         }
     }
 
